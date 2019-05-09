@@ -1,0 +1,20 @@
+{
+  "name": "effecto-wt",
+  "version": "1.0.0",
+  "description": "Webtask to relay log in from GUI",
+  "main": "index.js",
+  "scripts": {
+    "serve": "wt serve index.js --hostname localhost --port 1337 --secrets-file .secrets --meta ENV=DEV",
+    "dev": "nodemon --exec \"yarn serve\"",
+    "deploy": "wt create --bundle index.js --secrets-file .secrets"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.19.0",
+    "express": "^4.16.4",
+    "qs": "^6.7.0",
+    "webtask-tools": "^3.4.0"
+  }
+}

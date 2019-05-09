@@ -1,0 +1,11 @@
+run with: "make run"
+then visit http://localhost:8080
+
+accepted commands:
+{"command":"invite", "data":{"id":"id1","group":"group1","ip":"ip1"}}
+{"command":"login", "data":{"id":"id1","ip":"ip1"}}
+{"command":"send", "data":{"id":"id1","message":"group1"}}
+
+Included Ip as a security message, however, a better way might be that the node server
+vill generate a new id for the user not the one linkedin returns, 
+to minimize sniffing security concernes.
