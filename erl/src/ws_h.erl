@@ -36,7 +36,14 @@ websocket_handle(<<"join">>, Data, _) ->
 	broadcast(
 		Group, jsone:encode(#{<<"joined_meeting">> => Id})
 	),
-	{ok, Group};
+	Info = lists:map(fun({{_, Key}, Value}) -> 
+			{Key, Value}
+		end, ets:match_object(group, {{Group, '_'}, '_'})),
+	{
+		reply, 
+		{text, jsone:encode([{<<"id">>, Group}|Info])}, 
+		Group
+	};
 
 %%**********************************************************
 %% {"command":"send", "data":{"id":"id1","message":"hejdu","group":"group1"}}
@@ -55,13 +62,21 @@ websocket_handle(<<"send">>, Data, Group) ->
 %% {"command":"create_meeting", "data":{"name":"group1", "agenda":[{"time": "1557560112000", "title":"name"}]}}
 %%**********************************************************
 websocket_handle(<<"create_meeting">>, Data, _) ->
-	Group = maps:get(<<"name">>, Data),
+	Group = base64:encode(crypto:strong_rand_bytes(40)),
 	meeting_group:start(
 		binary_to_atom(Group, latin1), 
+		maps:get(<<"name">>, Data),
 		maps:get(<<"agenda">>, Data)
 	),
 	pg2:join(Group, self()),
-	{reply, {text, <<"A new meeting has been created">>}, Group};
+	Info = lists:map(fun({{_, Key}, Value}) -> 
+			{Key, Value}
+		end, ets:match_object(group, {{Group, '_'}, '_'})),
+	{
+		reply, 
+		{text, jsone:encode([{<<"id">>, Group}|Info])}, 
+		Group
+	};
 
 %%**********************************************************
 %% {"command":"next"}
