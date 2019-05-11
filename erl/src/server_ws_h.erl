@@ -20,7 +20,20 @@ websocket_init(_State) -> {ok, self(), hibernate}.
 %%**********************************************************
 websocket_handle({text, Id}, State) ->
 	ets:insert(user, {{Id, auth}}),
-	{reply, {text, <<"invited">>}, State};
+	Msg = jsone:encode(#{
+			<<"invited">> => true,
+			<<"meetings">> => lists:delete(
+					auth, 
+					lists:flatten([
+						ets:match(user, {{Id, '$1'}}) | 
+						ets:match(
+							group, 
+							{{'$1', <<"creator">>}, Id}
+						)
+					])
+				)
+		}),
+	{reply, {text, Msg}, State};
 
 websocket_handle(_Data, State) ->
 	{ok, State}.

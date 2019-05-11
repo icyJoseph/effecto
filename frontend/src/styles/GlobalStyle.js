@@ -3,6 +3,8 @@ import { createGlobalStyle } from "styled-components";
 export const GlobalStyle = createGlobalStyle`
   :root{
     --background: ${({ theme }) => theme.white}
+    --red:${({ theme }) => theme.red};
+    --darkBlue:${({ theme }) => theme.darkBlue};
   }
 
   html {

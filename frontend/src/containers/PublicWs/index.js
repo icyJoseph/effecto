@@ -1,10 +1,11 @@
 import React, { useState, useRef } from "react";
 import Websocket from "react-websocket";
-import { Switch, Route } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Switch, Route, withRouter } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarPlus } from "@fortawesome/free-solid-svg-icons";
-
+import { ws } from "../../endpoints";
 import { Button } from "../../styles/Buttons";
 
 const FormContainer = styled.div`
@@ -41,11 +42,12 @@ const Form = styled.form`
 `;
 
 // this socket is to be used privately outside a meeting
-export function PublicWs() {
+export function PublicWs({ history }) {
   const [enabled, setEnabled] = useState(false);
   const wsRef = useRef();
   const _input = useRef("");
   const _desc = useRef("");
+  const { id } = useSelector(({ auth }) => auth);
 
   const handleChange = () => {
     if (!enabled) {
@@ -59,8 +61,13 @@ export function PublicWs() {
     console.log("connected to server");
   };
 
-  const handleMessage = data => {
+  const handleMessage = (data = "{}") => {
     console.log("message", data);
+    const parsed = JSON.parse(data);
+    const { success } = parsed;
+    if (success) {
+      history.push("/");
+    }
   };
 
   const createMeeting = e => {
@@ -72,8 +79,11 @@ export function PublicWs() {
       JSON.stringify({
         command: "create_meeting",
         data: {
-          name: _input.current.value,
-          agenda: [{ time: new Date().getTime(), title: _input.current.value }]
+          creator: id,
+          name: _input.current.value.trim(),
+          agenda: [
+            { time: new Date().getTime(), title: _input.current.value.trim() }
+          ]
         }
       })
     );
@@ -111,7 +121,7 @@ export function PublicWs() {
   return (
     <>
       <Websocket
-        url="ws://localhost:8080/websocket"
+        url={`${ws}/websocket`}
         onOpen={handleConnection}
         onMessage={handleMessage}
         ref={wsRef}
@@ -158,4 +168,4 @@ export function PublicWs() {
   );
 }
 
-export default PublicWs;
+export default withRouter(PublicWs);

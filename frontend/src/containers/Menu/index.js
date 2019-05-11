@@ -30,9 +30,10 @@ const Back = ({ history }) => {
 export const BurgerMenu = ({
   history,
   match: {
-    params: { route }
+    params: { route = "" }
   }
 }) => {
+  const showBack = ["create", "join"].includes(route);
   return (
     <>
       <Menu>
@@ -55,7 +56,7 @@ export const BurgerMenu = ({
           Stats
         </Link>
       </Menu>
-      {route && <Back history={history} />}
+      {showBack && <Back history={history} />}
     </>
   );
 };

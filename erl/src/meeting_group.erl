@@ -5,7 +5,7 @@
 
 -module(meeting_group).
 
--export([start/3]).
+-export([start/4]).
 -export([init/2]).
 -export([time/2]).
 -export([time/3]).
@@ -18,13 +18,14 @@
 %% members.
 %%**********************************************************
 % -spec start(Group, Agenda) -> no_return().
-start(Group, Name, Agenda) ->
+start(Group, Name, Creator, Agenda) ->
 	pg2:create(Group),
     register(
         binary_to_atom(Group, latin1), 
         spawn_link(?MODULE, init, [Group, Agenda])
     ),
     ets:insert(group, {{Group, <<"name">>}, Name}),
+    ets:insert(group, {{Group, <<"creator">>}, Creator}),
     ets:insert(group, {{Group, <<"agenda">>}, Agenda}),
     ets:insert(group, {{Group, <<"messages">>}, []}),
     ets:insert(

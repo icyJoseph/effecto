@@ -20,7 +20,7 @@ export function getProfile(token) {
   } = saved;
 
   if (use) {
-    return profile;
+    return { ...profile, use };
   }
 
   return axios
