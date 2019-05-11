@@ -10,7 +10,7 @@ get(path) -> "../../priv/";
 get(ets) -> [user, group];
 get(_) -> fail.
 
-%% variables:test("192.168.2.144", 10).
+%% variables:test("192.168.2.144", 100).
 test(Ip, N) ->
 	{ok, ConnPid} = gun:open(Ip, 8080),
     gun:ws_upgrade(ConnPid, "/websocketserver"),

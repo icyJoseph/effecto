@@ -8,7 +8,8 @@
 -export([start/4]).
 -export([init/2]).
 -export([time/2]).
--export([reminder/2]).
+-export([time/3]).
+-export([reminder/3]).
 -export([users/2]).
 % -export([prolog/1]).
 % -export([prolog_loop/1]).
@@ -35,16 +36,15 @@ start(Group, Name, Creator, Agenda) ->
     ).
 
 % -spec init(Group, Agenda) -> no_return().
-init(Group, _Agenda) -> 
-    % PrologPid = spawn(?MODULE, prolog, [Group]),
-	% _Agenda1 = lists:map(fun(Entry) -> 
-    %         {
-    %             maps:get(<<"time">>, Entry),
-    %             maps:get(<<"title">>, Entry)
-    %         }
-    %     end, Agenda),
-    % TimePid = spawn_link(?MODULE, time, [Group, Agenda1]),
-    TimePid = null,
+
+init(Group, Agenda) -> 
+	Agenda1 = lists:map(fun(Entry) -> 
+            {
+                maps:get(<<"to">>, Entry) - maps:get(<<"from">>, Entry),
+                maps:get(<<"title">>, Entry)
+            }
+        end, Agenda),
+    TimePid = spawn_link(?MODULE, time, [start, Group, Agenda1]),
     UserPid = spawn_link(?MODULE, users, [Group, 0]),
     timer:send_interval(
         1000 * 60, 
@@ -60,6 +60,9 @@ init(Group, _Agenda) ->
 loop(Group, List, TimePid, PrologPid) ->
     % PrologPid ! hello,
     receive 
+        start_meeting -> 
+            TimePid ! start_meeting,
+            loop(Group, List, TimePid);
         next_agenda -> 
             TimePid ! next_agenda,
             loop(Group, List, TimePid, PrologPid);
@@ -78,17 +81,38 @@ loop(Group, List, TimePid, PrologPid) ->
 %%**********************************************************
 %% Keep track of agenda
 %%**********************************************************
-time(_Group, []) ->
-    io:format("meeting done!");
-time(Group, [{Time, _Entry}|T]) ->
-    Reminder = spawn(?MODULE, reminder, [Group, Time]),
-    StartTime = os:system_time(millisecond),
+reminder(_, _, die) ->ok;
+reminder(Group, StartTime, _) ->
+    D = receive _-> die
+    after 1000 ->  
+        X = os:system_time(millisecond) - StartTime,
+        M = jsone:encode(#{
+            <<"time">> => X
+        }),
+        ws_h:broadcast(Group, M),
+        ok
+    end,
+    reminder(Group, StartTime, D).
+
+time(start, Group, List) ->
     receive
-        {get_time_left, Pid} -> 
-            A = os:system_time(millisecond) - StartTime,
-            Pid ! (Time - A);
-        next_agenda -> 
-            Reminder ! die;
+        start_meeting -> ok
+    end, 
+    time(Group, List).
+
+time(Group, []) ->
+    io:format("meeting done!"),
+    receive _ -> ok end, 
+    time(Group, []);
+
+time(Group, [{Time, _Entry}|T]) ->
+    
+    StartTime = os:system_time(millisecond),
+    % {ok, Timer} = timer:apply_interval(1000, ?MODULE, reminder, [Group, StartTime]),
+    Timer = spawn(?MODULE, reminder, [Group, StartTime, ok]),
+    receive
+        next_agenda -> ok;
+            % exit(Timer, poop);
         _ -> ok
     after Time ->
         case T of
@@ -97,19 +121,19 @@ time(Group, [{Time, _Entry}|T]) ->
             _ -> ok
         end
     end, 
+    exit(Timer, poop),
     time(Group, T).
-
 %%**********************************************************
 %% 
 %%**********************************************************
-reminder(_Group, T) ->
-    T1 = T - 6000,
-    receive
-        die ->
-            io:format("iam now dead!"),
-            ok
-    after T1 -> io:format("dying after 6sec")%ws_h:broadcast(Group, <<"one min left">>)
-    end.
+% reminder(_Group, T) ->
+%     T1 = T - 6000,
+%     receive
+%         die ->
+%             io:format("iam now dead!"),
+%             ok
+%     after T1 -> io:format("dying after 6sec")%ws_h:broadcast(Group, <<"one min left">>)
+%     end.
 
 %%**********************************************************
 %% 
