@@ -32,9 +32,11 @@ websocket_handle(<<"join">>, Data, _) ->
 	ets:insert(user, {{Id, Group}}),
 	pg2:join(Group, self()),
 	(catch register(binary_to_atom(Id, latin1), self())),
-	broadcast(
-		Group, jsone:encode(#{<<"joined_meeting">> => Id})
-	),
+	binary_to_atom(Id, latin1) ! 
+		{
+		user_joined, 
+		jsone:encode(#{<<"joined_meeting">> => Id})
+		},
 	{ok, Group};
 
 %%**********************************************************
@@ -46,7 +48,8 @@ websocket_handle(<<"send">>, Data, Group) ->
 			<<"user">> => maps:get(<<"message">>, Data),
 			<<"id">> => maps:get(<<"id">>, Data)
 		}),
-	broadcast(Group, Message),
+	binary_to_atom(Group, latin1) ! {send, Message},
+	% broadcast(Group, Message),
 	{ok, Group};
 
 %%**********************************************************
@@ -55,7 +58,7 @@ websocket_handle(<<"send">>, Data, Group) ->
 websocket_handle(<<"create_meeting">>, Data, _) ->
 	Group = maps:get(<<"name">>, Data),
 	meeting_group:start(
-		Group, 
+		binary_to_atom(Group, latin1), 
 		maps:get(<<"agenda">>, Data)
 	),
 	pg2:join(Group, self()),
@@ -82,7 +85,7 @@ websocket_info(Info, State) ->
 %%**********************************************************
 %% 
 %%**********************************************************
-broadcast(Group, Message) ->
-	lists:map(fun(Pid) -> 
-		Pid ! Message 
-	end, lists:usort(pg2:get_members(Group))).
+% broadcast(Group, Message) ->
+% 	lists:map(fun(Pid) -> 
+% 		Pid ! Message 
+% 	end, lists:usort(pg2:get_members(Group))).
