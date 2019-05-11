@@ -9,6 +9,7 @@
 %% other processes, keeping track of e.g. time and group 
 %% members.
 %%**********************************************************
+% -spec start(Group, Agenda) -> no_return().
 start(Group, Agenda) ->
 	pg2:create(Group),
     register(
@@ -16,6 +17,7 @@ start(Group, Agenda) ->
         spawn_link(?MODULE, init, [Group, Agenda])
     ).
 
+% -spec init(Group, Agenda) -> no_return().
 init(_Group, Agenda) -> 
 	Agenda1 = lists:map(fun(Entry) -> 
             {
@@ -25,7 +27,7 @@ init(_Group, Agenda) ->
         end, Agenda),
     spawn_link(?MODULE, time, [Agenda1]),
     loop().
-
+    
 %%**********************************************************
 %% Receive messages to meeting group
 %%**********************************************************
