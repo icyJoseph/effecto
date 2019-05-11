@@ -66,7 +66,7 @@ export function Main() {
         <Content>
           <div>
             {meetings.length ? (
-              <span>{meetings.length} meeting(s)</span>
+              meetings.map(meeting => <span key={meeting}>{meeting}</span>)
             ) : (
               // meetings.map(meeting => <span key={meeting}>{meeting}</span>)
               <span>No meetings yet!</span>

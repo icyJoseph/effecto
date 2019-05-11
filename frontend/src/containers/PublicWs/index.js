@@ -5,9 +5,11 @@ import { Switch, Route, withRouter } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarPlus, faSignInAlt } from "@fortawesome/free-solid-svg-icons";
+import MeetingSpace from "../MeetingSpace";
 import { ws } from "../../endpoints";
 import { Button } from "../../styles/Buttons";
 import { JOIN_MEETING } from "../../ducks/meetings";
+import { Idea } from "../../styles/Icons";
 
 const MeetingList = styled.div`
   display: flex;
@@ -63,6 +65,7 @@ export function PublicWs({ history }) {
   const _input = useRef("");
   const _desc = useRef("");
   const _points = useRef("");
+  const _link = useRef("");
   const { id } = useSelector(({ auth }) => auth);
   const { meetings } = useSelector(({ meetings }) => meetings);
   const dispatch = useDispatch();
@@ -140,14 +143,26 @@ export function PublicWs({ history }) {
     );
   };
 
-  const sendMessage = () => {
-    wsRef.current.sendMessage(
+  const sendMessage = (group, message) => {
+    console.log(group, message, id);
+    return wsRef.current.sendMessage(
       JSON.stringify({
         command: "send",
         data: {
-          id: "929292",
-          group: "0202020",
-          message: "I suggest Riesen"
+          id,
+          group,
+          message
+        }
+      })
+    );
+  };
+
+  const startMeeting = group => {
+    wsRef.current.sendMessage(
+      JSON.stringify({
+        command: "start_meeting",
+        data: {
+          group
         }
       })
     );
@@ -155,6 +170,12 @@ export function PublicWs({ history }) {
 
   const nextEntry = () => {
     wsRef.current.sendMessage(JSON.stringify({ command: "next" }));
+  };
+
+  const joinLink = e => {
+    e.preventDefault();
+    const link = _link.current.value;
+    joinMeeting(link)();
   };
 
   return (
@@ -184,43 +205,62 @@ export function PublicWs({ history }) {
                     placeholder="Purpose"
                     rows={2}
                   />
+                  <input type="text" placeholder="Location" />
+                  <label htmlFor="agenda">Agenda</label>
                   <textarea
+                    id="agenda"
                     type="text"
                     ref={_points}
-                    placeholder="Points one per line"
+                    placeholder="One topic per line."
                     rows={4}
                   />
+                  <div>
+                    <Idea />
+                    <span>
+                      Remember to plan enough time for each topic to cover
+                      questions and discussions
+                    </span>
+                  </div>
                   <Button enabled={enabled}>
                     <FontAwesomeIcon icon={faCalendarPlus} />
                   </Button>
                 </Form>
+
+                <div />
               </div>
             )}
           />
           <Route
             path="/join"
             render={() => (
-              <MeetingList>
-                {meetings.map(meeting => (
-                  <Button
-                    key={meeting}
-                    onClick={joinMeeting(meeting)}
-                    enabled={true}
-                  >
-                    <span>Join {meeting.slice(0, 5)}</span>
-                    <FontAwesomeIcon icon={faSignInAlt} />
-                  </Button>
-                ))}
-              </MeetingList>
+              <>
+                <Form onSubmit={joinLink}>
+                  <input type="text" ref={_link} placeholder="Got a link?" />
+                  <button>Join</button>
+                </Form>
+
+                <MeetingList>
+                  {meetings.map(meeting => (
+                    <Button
+                      key={meeting}
+                      onClick={joinMeeting(meeting)}
+                      enabled={true}
+                    >
+                      <span>Join {meeting.slice(0, 5)}</span>
+                      <FontAwesomeIcon icon={faSignInAlt} />
+                    </Button>
+                  ))}
+                </MeetingList>
+              </>
             )}
           />
           <Route
             path="/meeting"
             render={() => (
-              <>
-                <button onClick={nextEntry}>nextEntry</button>
-                <button onClick={sendMessage}>sendMessage</button>
-              </>
+              <MeetingSpace
+                startMeeting={startMeeting}
+                sendMessage={sendMessage}
+              />
             )}
           />
         </Switch>

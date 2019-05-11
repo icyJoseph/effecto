@@ -46,6 +46,15 @@ export const BurgerMenu = ({
         <Link className="menu-item" to="/contacts">
           Contacts
         </Link>
+        <Link className="menu-item" to="/meetings">
+          Meetings
+        </Link>
+        <Link className="menu-item" to="/tasks">
+          Tasks
+        </Link>
+        <Link className="menu-item" to="/createGroup">
+          Create Group
+        </Link>
         <Link className="menu-item" to="/about">
           About
         </Link>
