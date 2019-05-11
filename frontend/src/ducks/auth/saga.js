@@ -5,6 +5,7 @@ import {
   SET_TOKEN,
   SET_PROFILE,
   GET_PROFILE,
+  LOADING_PROFILE,
   AUTH_ERROR
 } from "./";
 import { normalize } from "./helpers";
@@ -26,6 +27,7 @@ export function* tokenSaga({ code, state }) {
 export function* profileSaga() {
   try {
     const token = yield select(({ auth: { accessToken } }) => accessToken);
+    yield put({ type: LOADING_PROFILE });
     const profile = yield call(getProfile, token);
     const normalized = normalize(profile);
     yield put({ type: SET_PROFILE, ...normalized });
