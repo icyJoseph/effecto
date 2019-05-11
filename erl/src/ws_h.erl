@@ -30,9 +30,8 @@ websocket_handle(<<"join">>, Data, _) ->
 	[{{Id, auth}}] = ets:lookup(user, {Id, auth}),
 	Group = maps:get(<<"group">>, Data),
 	ets:insert(user, {{Id, Group}}),
-	false = lists:member(Id, pg2:get_members(Group)),
 	pg2:join(Group, self()),
-	register(binary_to_atom(Id, latin1), self()),
+	(catch register(binary_to_atom(Id, latin1), self())),
 	broadcast(
 		Group, jsone:encode(#{<<"joined_meeting">> => Id})
 	),
