@@ -25,10 +25,11 @@ websocket_handle({text, Msg}, State) ->
 websocket_handle(<<"join">>, Data) ->
 	Id = maps:get(<<"id">>, Data),
 	Group = maps:get(<<"group">>, Data),
-	{{Id, Group}} = ets:match(user, {{Id, Group}}),
-	pg2:create(Group),
+	[{{Id, Group}}] = ets:match_object(user, {{Id, Group}}),
+	% pg2:create(Group),
 	pg2:join(Group, self()),
 	register(binary_to_atom(Id, latin1), self()),
+	Group ! {user_joined, <<"some message about a user joined">>},
 	broadcast(
 		Group, jsone:encode(#{<<"joined_meeting">> => Id})
 	);
@@ -50,7 +51,7 @@ websocket_handle(<<"send">>, Data) ->
 websocket_handle(<<"create_meeting">>, Data) ->
 	Group = maps:get(<<"name">>, Data),
 	meeting_group:start(
-		Group, 
+		binary_to_atom(Group, latin1), 
 		maps:get(<<"agenda">>, Data)
 	),
 	pg2:join(Group, self()),
