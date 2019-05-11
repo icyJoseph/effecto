@@ -11,7 +11,7 @@ const Circle = styled.div`
   }
 `;
 
-export function Add() {
+export function CreateMeeting() {
   return (
     <Circle>
       <Link to="/create">
@@ -21,4 +21,4 @@ export function Add() {
   );
 }
 
-export default Add;
+export default CreateMeeting;
