@@ -7,7 +7,7 @@ import { ws } from "../../endpoints";
 export function PrivateWs() {
   const wsRef = useRef();
   const [valid, setValid] = useState(false);
-  const { refresh } = useSelector(({ auth }) => auth);
+  const { refresh, id } = useSelector(({ auth }) => auth);
 
   useEffect(() => {
     if (refresh) {
@@ -21,15 +21,13 @@ export function PrivateWs() {
 
   const handleConnection = () => {
     console.log("connected to private server");
+    console.log(id);
+    wsRef.current.sendMessage(id);
   };
 
   const handleMessage = data => {
     console.log("message", data);
   };
-
-  //   const sendMessage = () => {
-  //     wsRef.current.sendMessage("929292"); // Send user id
-  //   };
 
   return (
     valid && (

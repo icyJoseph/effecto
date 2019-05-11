@@ -1,5 +1,6 @@
 import React, { useState, useRef } from "react";
 import Websocket from "react-websocket";
+import { useSelector } from "react-redux";
 import { Switch, Route, withRouter } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -46,6 +47,7 @@ export function PublicWs({ history }) {
   const wsRef = useRef();
   const _input = useRef("");
   const _desc = useRef("");
+  const { id } = useSelector(({ auth }) => auth);
 
   const handleChange = () => {
     if (!enabled) {
@@ -77,6 +79,7 @@ export function PublicWs({ history }) {
       JSON.stringify({
         command: "create_meeting",
         data: {
+          creator: id,
           name: _input.current.value.trim(),
           agenda: [
             { time: new Date().getTime(), title: _input.current.value.trim() }
