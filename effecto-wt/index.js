@@ -8,7 +8,8 @@ const app = express();
 const jsonParser = bodyParser.json();
 
 const production = "https://nice-sky.surge.sh";
-const development = "http://localhost:3000";
+// const development = "http://localhost:3000";
+const development = "http://192.168.2.145:3000";
 
 const tokenEP = "https://www.linkedin.com/oauth/v2/accessToken";
 const linkedInAPI = "https://api.linkedin.com";

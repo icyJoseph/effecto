@@ -4,7 +4,8 @@
   "description": "Webtask to relay log in from GUI",
   "main": "index.js",
   "scripts": {
-    "serve": "wt serve index.js --hostname localhost --port 1337 --secrets-file .secrets --meta ENV=DEV",
+    "serve": "wt serve index.js --hostname 192.168.2.145 --port 1337 --secrets-file .secrets --meta ENV=DEV",
+    "serve-local": "wt serve index.js --hostname localhost --port 1337 --secrets-file .secrets --meta ENV=DEV",
     "dev": "nodemon --exec \"yarn serve\"",
     "deploy": "wt create --bundle index.js --secrets-file .secrets"
   },
