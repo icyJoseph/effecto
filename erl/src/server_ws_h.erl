@@ -6,6 +6,7 @@
 -export([websocket_info/2]).
 
 init(Req, Opts) ->
+	{{127,0,0,1}, _} = maps:get(peer, Req),
 	{
 		cowboy_websocket, Req, Opts, 
 		#{idle_timeout => 1000 * 60 * 60 * 24}
@@ -20,7 +21,7 @@ websocket_handle({text, Msg}, State) ->
 	Data = jsone:decode(Msg),
 	Id = maps:get(<<"id">>, Data),
 	Group = maps:get(<<"group">>, Data),
-	ets:insert(user, {Id, Group}),
+	database:insert(user, {Id, Group}),
 	{reply, {text, <<"invited">>}, State};
 
 websocket_handle(_Data, State) ->

@@ -10,7 +10,7 @@ _rel
 ebin
 websocket.d
 erl/deps
-
+erl/priv/*
 # testing
 /coverage
 
