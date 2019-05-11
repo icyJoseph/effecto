@@ -17,7 +17,7 @@ export function FwdAuth({ location: { search } }) {
 
   useEffect(() => {
     dispatch({ type: FORWARD_CODE, code, state });
-  }, []);
+  }, [code, dispatch, state]);
 
   return done || error ? <Redirect to="/" /> : <Spinner />;
 }
