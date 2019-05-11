@@ -25,7 +25,10 @@ start(Group, Name, Agenda) ->
     ),
     ets:insert(group, {{Group, <<"name">>}, Name}),
     ets:insert(group, {{Group, <<"agenda">>}, Agenda}),
-    ets:insert(group, {{Group, <<"messages">>}, []}).
+    ets:insert(group, {{Group, <<"messages">>}, []}),
+    ets:insert(
+        group, {{Group, <<"status">>}, <<"active">>}
+    ).
 
 % -spec init(Group, Agenda) -> no_return().
 init(Group, Agenda) -> 
@@ -90,6 +93,12 @@ reminder(Group, T) ->
 %%**********************************************************
 users(Group, N) -> 
     receive
-        [] when N > 1000 * 60 * 20 -> exit(abandoned);
-        N1 -> ws_h:broadcast(Group, #{<<"users">> => N1})
+        [] when N > 1000 * 60 * 20 -> 
+            ets:insert(group, {{Group, <<"users">>}, 0}),
+            ets:insert(group, 
+                {{Group, <<"status">>}, <<"finished">>}),
+            exit(abandoned);
+        N1 -> 
+            ws_h:broadcast(Group, #{<<"users">> => N1}),
+            ets:insert(group, {{Group, <<"users">>}, N})
     end.
