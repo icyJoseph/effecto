@@ -27,6 +27,7 @@ websocket_handle(_Data, State) ->
 %% {"command":"join", "data":{"id":"id1","group":"group1"}}
 %%**********************************************************
 websocket_handle(<<"join">>, Data, _) ->
+	io:format("Data ~p~n",[Data]),
 	Id = maps:get(<<"id">>, Data),
 	[{{Id, auth}}] = ets:lookup(user, {Id, auth}),
 	Group = maps:get(<<"group">>, Data),
@@ -46,9 +47,11 @@ websocket_handle(<<"join">>, Data, _) ->
 	};
 
 %%**********************************************************
-%% {"command":"send", "data":{"id":"id1","message":"hejdu","group":"group1"}}
+%% {"command":"send_feeling", "data":{"id":"id1","message":"hejdu","group":"group1"}}
 %%**********************************************************
 websocket_handle(<<"send">>, Data, Group) ->
+	io:format("Data ~p~n",[Data]),
+	io:format("Group ~p~n",[Group]),
 	Group = maps:get(<<"group">>, Data),
 	Message = jsone:encode(#{
 			<<"user">> => maps:get(<<"message">>, Data),
@@ -59,13 +62,30 @@ websocket_handle(<<"send">>, Data, Group) ->
 	{ok, Group};
 
 %%**********************************************************
-%% {"command":"create_meeting", "data":{"name":"group1", "agenda":[{"time": 15575601120000, "title":"name"}]}}
+%% {"command":"send", "data":{"id":"id1","message":"hejdu","group":"group1"}}
+%%**********************************************************
+websocket_handle(<<"send">>, Data, Group) ->
+	io:format("Data ~p~n",[Data]),
+	io:format("Group ~p~n",[Group]),
+	Group = maps:get(<<"group">>, Data),
+	Message = jsone:encode(#{
+			<<"user">> => maps:get(<<"message">>, Data),
+			<<"message">> => maps:get(<<"id">>, Data)
+		}),
+	binary_to_atom(Group, latin1) ! {msg, Message},
+	broadcast(Group, Message),
+	{ok, Group};
+
+%%**********************************************************
+%% {"command":"create_meeting", "data":{"name":"group1", "creator":"id1", "agenda":[{"start_time": 15575601120000, "end_time": 15575601120000, "title":"name"}]}}
 %%**********************************************************
 websocket_handle(<<"create_meeting">>, Data, _) ->
+	io:format("Data ~p~n",[Data]),
 	Group = base64:encode(crypto:strong_rand_bytes(40)),
 	meeting_group:start(
 		Group,
 		maps:get(<<"name">>, Data),
+		maps:get(<<"creator">>, Data),
 		maps:get(<<"agenda">>, Data)
 	),
 	pg2:join(Group, self()),
@@ -74,7 +94,8 @@ websocket_handle(<<"create_meeting">>, Data, _) ->
 		end, ets:match_object(group, {{Group, '_'}, '_'})),
 	{
 		reply, 
-		{text, jsone:encode([{<<"id">>, Group}|Info])}, 
+		{text, jsone:encode([
+			{<<"id">>, Group}, {<<"success">>, true}|Info])}, 
 		Group
 	};
 
@@ -82,6 +103,8 @@ websocket_handle(<<"create_meeting">>, Data, _) ->
 %% {"command":"next"}
 %%**********************************************************
 websocket_handle(<<"next">>, Data, Group) ->
+	io:format("Data ~p~n",[Data]),
+	io:format("Group ~p~n",[Group]),
 	Group = maps:get(<<"group">>, Data),
 	binary_to_atom(Group, latin1) ! next_agenda,
 	broadcast(Group, <<"next_task">>),
