@@ -26,9 +26,9 @@ export function PrivateWs() {
     console.log("message", data);
   };
 
-  const sendMessage = () => {
-    wsRef.current.sendMessage("929292"); // Send user id
-  };
+  //   const sendMessage = () => {
+  //     wsRef.current.sendMessage("929292"); // Send user id
+  //   };
 
   return (
     valid && (
