@@ -57,9 +57,15 @@ websocket_handle(<<"send">>, Data, Group) ->
 	binary_to_atom(Group, latin1) ! {msg, Message},
 	broadcast(Group, Message),
 	{ok, Group};
+%% {"command":"start_meeting", "data":{"group":"GrupeID"}}
+websocket_handle(<<"start_meeting">>, Data, Group) ->
+	Group = maps:get(<<"group">>, Data),
+	binary_to_atom(Group, latin1) ! start_meeting,
+	broadcast(Group, <<"meeting started">>),
+	{ok, Group};
 
 %%**********************************************************
-%% {"command":"create_meeting", "data":{"name":"group1", "agenda":[{"time": 15575601120000, "title":"name"}]}}
+%% {"command":"create_meeting", "data":{"name":"group1", "agenda":[{"from": 1230000,"to": 1260000, "title":"name"}]}}
 %%**********************************************************
 websocket_handle(<<"create_meeting">>, Data, _) ->
 	Group = base64:encode(crypto:strong_rand_bytes(40)),
