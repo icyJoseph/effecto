@@ -15,13 +15,10 @@ init(Req, Opts) ->
 websocket_init(_State) -> {ok, self(), hibernate}.
 
 %%**********************************************************
-%% {"id":"id1","group":"group1"}
+%% id
 %%**********************************************************
-websocket_handle({text, Msg}, State) ->
-	Data = jsone:decode(Msg),
-	Id = maps:get(<<"id">>, Data),
-	Group = maps:get(<<"group">>, Data),
-	ets:insert(user, {{Id, Group}}),
+websocket_handle({text, Id}, State) ->
+	ets:insert(user, {{Id, auth}}),
 	{reply, {text, <<"invited">>}, State};
 
 websocket_handle(_Data, State) ->

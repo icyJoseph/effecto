@@ -12,14 +12,12 @@ export function PrivateWs() {
   };
 
   const sendMessage = () => {
-    wsRef.current.sendMessage(
-      JSON.stringify({ id: "929292", group: "0202020" })
-    );
+    wsRef.current.sendMessage("929292"); // Send user id
   };
 
   return (
     <div>
-      <button onClick={sendMessage}>Test</button>
+      <button onClick={sendMessage}>Test private</button>
       <Websocket
         url="ws://localhost:8080/websocketserver"
         onOpen={handleConnection}
