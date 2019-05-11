@@ -32,6 +32,7 @@ export function* profileSaga() {
     const normalized = normalize(profile);
     yield put({ type: SET_PROFILE, ...normalized });
   } catch (e) {
+    console.log(e);
     yield put({ type: AUTH_ERROR });
   }
 }

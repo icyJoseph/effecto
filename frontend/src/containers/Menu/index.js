@@ -10,6 +10,9 @@ export const BurgerMenu = props => {
       <Link className="menu-item" to="/">
         Home
       </Link>
+      <Link className="menu-item" to="/create">
+        Create
+      </Link>
       <Link className="menu-item" to="/meetings">
         Meetings
       </Link>

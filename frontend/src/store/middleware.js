@@ -1,4 +1,4 @@
-import { SET_TOKEN, LOG_OUT } from "../ducks/auth";
+import { SET_TOKEN, SET_PROFILE, LOG_OUT } from "../ducks/auth";
 
 export const KEY = "effecto-auth";
 
@@ -11,6 +11,16 @@ export const persistAuth = store => next => action => {
     localStorage.setItem(KEY, JSON.stringify({ ...data, expiry, refresh }));
     return next({ ...action, refresh });
   }
+
+  if (action.type === SET_PROFILE) {
+    const current = JSON.parse(localStorage.getItem(KEY) || "{}");
+    const { type: omit, ...profile } = action;
+    localStorage.setItem(
+      KEY,
+      JSON.stringify({ ...current, ...profile, use: true })
+    );
+  }
+
   if (action.type === LOG_OUT) {
     localStorage.removeItem(KEY);
   }

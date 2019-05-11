@@ -4,11 +4,19 @@ import PrivateWs from "../PrivateWs";
 import LinkedIn from "../../components/LinkedIn";
 import Logout from "../../components/Logout";
 import Avatar from "../../components/Avatar";
-import Stopwatch from "../../components/Stopwatch";
-import Calendar from "../../components/Calendar";
+// import Stopwatch from "../../components/Stopwatch";
+// import Calendar from "../../components/Calendar";
 import { GET_PROFILE, LOG_OUT } from "../../ducks/auth";
 import { Top } from "./styled";
+import Add from "../../components/Add";
 import Spinner from "../../components/Spinner";
+
+import styled from "styled-components";
+
+const Content = styled.div`
+  text-align: center;
+  width: 100%;
+`;
 
 export function Main() {
   const { done, refresh, ...auth } = useSelector(({ auth }) => auth);
@@ -26,6 +34,7 @@ export function Main() {
   }, [dispatch, done, refresh]);
 
   const { firstName, profilePicture = {}, loadingProfile } = auth;
+
   return (
     <div id="main">
       {loadingProfile ? (
@@ -42,12 +51,18 @@ export function Main() {
           </div>
         </Top>
       )}
-      <ul>
+      <Content>
+        <div>
+          <span>No meetings yet!</span>
+        </div>
+        {/* <ul>
         <li>Something Interesting?</li>
-      </ul>
-      <Stopwatch />
-      <Calendar />
-      <PrivateWs />
+      </ul> */}
+        {/* <Stopwatch /> */}
+        {/* <Calendar /> */}
+        <PrivateWs />
+        {done && <Add />}
+      </Content>
     </div>
   );
 }
