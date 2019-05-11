@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Websocket from "react-websocket";
 import { useSelector } from "react-redux";
+import { ws } from "../../endpoints";
 
 // this socket is to be used privately inside a meeting?
 export function PrivateWs() {
@@ -33,7 +34,7 @@ export function PrivateWs() {
   return (
     valid && (
       <Websocket
-        url="ws://localhost:8080/websocketserver"
+        url={`${ws}/websocketserver`}
         onOpen={handleConnection}
         onMessage={handleMessage}
         ref={wsRef}

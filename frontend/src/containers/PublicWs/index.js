@@ -4,7 +4,7 @@ import { Switch, Route } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarPlus } from "@fortawesome/free-solid-svg-icons";
-
+import { ws } from "../../endpoints";
 import { Button } from "../../styles/Buttons";
 
 const FormContainer = styled.div`
@@ -72,8 +72,10 @@ export function PublicWs() {
       JSON.stringify({
         command: "create_meeting",
         data: {
-          name: _input.current.value,
-          agenda: [{ time: new Date().getTime(), title: _input.current.value }]
+          name: _input.current.value.trim(),
+          agenda: [
+            { time: new Date().getTime(), title: _input.current.value.trim() }
+          ]
         }
       })
     );
@@ -111,7 +113,7 @@ export function PublicWs() {
   return (
     <>
       <Websocket
-        url="ws://localhost:8080/websocket"
+        url={`${ws}/websocket`}
         onOpen={handleConnection}
         onMessage={handleMessage}
         ref={wsRef}
