@@ -74,7 +74,7 @@ loop(Group, List, TimePid, PrologPid) ->
             List1 = [Map|List],
             ets:insert(
                 group, 
-                {{Group, messages}, jsone:encode(List1)}
+                {{Group, messages}, List1}
             ),
             loop(Group, List1, TimePid, PrologPid)
     end.

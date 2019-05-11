@@ -61,7 +61,9 @@ websocket_handle(<<"send_feeling">>, Data, Group) ->
 %%**********************************************************
 %% {"command":"send", "data":{"id":"id1","message":"hejdu","group":"group1"}}
 %%**********************************************************
-websocket_handle(<<"send">>, Data, Group) ->
+websocket_handle(<<"send">>, Data, _Group) ->
+	io:format("Data ~p~n",[Data]),
+	% io:format("Group ~p~n",[Group]),
 	Group = maps:get(<<"group">>, Data),
 	Message = jsone:encode(#{
 			<<"user">> => maps:get(<<"id">>, Data),
@@ -71,7 +73,9 @@ websocket_handle(<<"send">>, Data, Group) ->
 	broadcast(Group, Message),
 	{ok, Group};
 
-%% {"command":"start_meeting", "data":{"group":"GrupeID"}}
+%%**********************************************************
+%% {"command":"start_meeting", "data":{"group":"group1"}}
+%%**********************************************************
 websocket_handle(<<"start_meeting">>, Data, Group) ->
 	Group = maps:get(<<"group">>, Data),
 	binary_to_atom(Group, latin1) ! start_meeting,
@@ -82,7 +86,8 @@ websocket_handle(<<"start_meeting">>, Data, Group) ->
 % {"command":"create_meeting", "data":{"name":"group1", "creator":"id1","agenda":[{"from": 1557584366000,"to": 1557584396000, "title":"name1"},{"from": 1557584366000,"to": 1557584396000, "title":"name2"}]}}
 %%**********************************************************
 websocket_handle(<<"create_meeting">>, Data, _) ->
-	Group = base64:encode(crypto:strong_rand_bytes(40)),
+	G = base64:encode(crypto:strong_rand_bytes(40)),
+	Group = binary:part(G, {1, 5}),
 	meeting_group:start(
 		Group,
 		maps:get(<<"name">>, Data),

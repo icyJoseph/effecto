@@ -10,7 +10,7 @@ get(path) -> "../../priv/";
 get(ets) -> [user, group];
 get(_) -> fail.
 
-%% variables:test("192.168.2.144", 100).
+%% variables:test("192.168.2.144", 1).
 test(Ip, N) ->
 	{ok, ConnPid} = gun:open(Ip, 8080),
     gun:ws_upgrade(ConnPid, "/websocketserver"),
@@ -40,7 +40,7 @@ test_create_meeting(Ip) ->
     gun:ws_upgrade(ConnPid, "/websocket"),
 	lists:map(fun(_) -> receive _ -> ok end end, lists:seq(1, 2)),
 	gun:ws_send(ConnPid, {text, erlang:iolist_to_binary([
-		<<"{\"command\":\"create_meeting\", \"data\":{\"name\":\"group1\", \"creator\":\"1\", \"agenda\":[{\"from\": 15575601120000, \"to\": 15575601120000, \"title\":\"name\"}]}}">>
+		<<"{\"command\":\"create_meeting\", \"data\":{\"name\":\"group1\", \"creator\":\"1\", \"purpose\":\"1\", \"agenda\":[{\"from\": 15575601120000, \"to\": 15575601120000, \"title\":\"name\"}]}}">>
 	])}),
 	receive
 		{gun_ws,_,_,{text,Json}} -> maps:get(<<"id">>, jsone:decode(Json))
