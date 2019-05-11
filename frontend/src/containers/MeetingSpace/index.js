@@ -89,18 +89,12 @@ const MeetingContent = styled.div`
   }
 `;
 
-const Points = [
-  { id: 0, name: "Look at statistics of last month's", time: "10 min" },
-  { id: 1, name: "Discuss Options", time: "10 min" },
-  { id: 2, name: "Take decision on at least 3 new brands", time: "10 min" }
-];
-
 export function MeetingSpace({ name, startMeeting, sendMessage }) {
   const _message = useRef("");
   const [donePoints, addChecked] = useState([]);
   const [rating, setRating] = useState("");
 
-  const { id: meetingId, messages = [], ...rest } = useSelector(
+  const { id: meetingId, messages = [], agenda = [], ...rest } = useSelector(
     ({ meetings: { meeting } }) => meeting
   );
 
@@ -150,9 +144,12 @@ export function MeetingSpace({ name, startMeeting, sendMessage }) {
         </div>
       </Row>
       <MidRow>
-        {Points.map(({ id, name, time }) => (
-          <div key={id}>
-            <Task onClick={checkPoint(id)} checked={donePoints.includes(id)}>
+        {agenda.map(({ id, title: name, time }, index) => (
+          <div key={`${name}-${index}`}>
+            <Task
+              onClick={checkPoint(`${name}-${index}`)}
+              checked={donePoints.includes(`${name}-${index}`)}
+            >
               <span>{name}</span> - <span>{time}</span> <SetTimer />
             </Task>
             <textarea type="text" placeholder="Notes" />

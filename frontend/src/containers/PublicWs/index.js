@@ -14,6 +14,8 @@ import { Idea } from "../../styles/Icons";
 const MeetingList = styled.div`
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
+
   > * {
     box-shadow: 1px 2px 3px rgba(0, 0, 0, 0.3);
     padding: 0.25em;
@@ -166,10 +168,6 @@ export function PublicWs({ history }) {
         }
       })
     );
-  };
-
-  const nextEntry = () => {
-    wsRef.current.sendMessage(JSON.stringify({ command: "next" }));
   };
 
   const joinLink = e => {
