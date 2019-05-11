@@ -5,8 +5,9 @@
 -export([stop/1]).
 
 start(_Type, _Args) ->
-	ets:new(user, [ordered_set, named_table, public]),
-	ets:new(group, [ordered_set, named_table, public]),
+	database:init(),
+	% ets:new(user, [ordered_set, named_table, public]),
+	% ets:new(group, [ordered_set, named_table, public]),
 	Dispatch = cowboy_router:compile([
 		{'_', [
 			%% copypasted example from ws_handler example, to test it.
