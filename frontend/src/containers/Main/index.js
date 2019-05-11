@@ -43,7 +43,7 @@ export function Main() {
       !done && dispatch({ type: GET_PROFILE });
     }
     // otherwise, suggest refreshing the session
-  }, [refresh]);
+  }, [dispatch, done, refresh]);
 
   const { firstName, profilePicture = {} } = auth;
 
