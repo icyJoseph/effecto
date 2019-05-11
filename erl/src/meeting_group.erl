@@ -9,7 +9,7 @@
 -export([init/2]).
 -export([time/2]).
 -export([time/3]).
--export([reminder/2]).
+-export([reminder/3]).
 -export([users/2]).
 
 %%**********************************************************
@@ -73,16 +73,22 @@ loop(Group, List, TimePid) ->
             loop(Group, List1, TimePid)
     end.
 
-reminder(Group, OriginalTimestamp) ->
-    X = os:system_time(millisecond) - OriginalTimestamp,
-    M = jsone:encode(#{
-            <<"time">> => X
-        }),
-    ws_h:broadcast(Group, M).
-
 %%**********************************************************
 %% Keep track of agenda
 %%**********************************************************
+reminder(_, _, die) ->ok;
+reminder(Group, StartTime, _) ->
+    D = receive _-> die
+    after 1000 ->  
+        X = os:system_time(millisecond) - StartTime,
+        M = jsone:encode(#{
+            <<"time">> => X
+        }),
+        ws_h:broadcast(Group, M),
+        ok
+    end,
+    reminder(Group, StartTime, D).
+
 time(start, Group, List) ->
     receive
         start_meeting -> ok
@@ -97,10 +103,11 @@ time(Group, []) ->
 time(Group, [{Time, _Entry}|T]) ->
     
     StartTime = os:system_time(millisecond),
-    {ok, Timer} = timer:apply_interval(1000, ?MODULE, reminder, [Group, StartTime]),
+    % {ok, Timer} = timer:apply_interval(1000, ?MODULE, reminder, [Group, StartTime]),
+    Timer = spawn(?MODULE, reminder, [Group, StartTime, ok]),
     receive
-        next_agenda -> 
-            exit(Timer);
+        next_agenda -> ok;
+            % exit(Timer, poop);
         _ -> ok
     after Time ->
         case T of
@@ -109,6 +116,7 @@ time(Group, [{Time, _Entry}|T]) ->
             _ -> ok
         end
     end, 
+    exit(Timer, poop),
     time(Group, T).
 %%**********************************************************
 %% 

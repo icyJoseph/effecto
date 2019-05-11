@@ -75,6 +75,7 @@ websocket_handle(<<"send">>, Data, Group) ->
 	binary_to_atom(Group, latin1) ! {msg, Message},
 	broadcast(Group, Message),
 	{ok, Group};
+
 %% {"command":"start_meeting", "data":{"group":"GrupeID"}}
 websocket_handle(<<"start_meeting">>, Data, Group) ->
 	Group = maps:get(<<"group">>, Data),
@@ -83,7 +84,7 @@ websocket_handle(<<"start_meeting">>, Data, Group) ->
 	{ok, Group};
 
 %%**********************************************************
-%% {"command":"create_meeting", "data":{"name":"group1", "agenda":[{"from": 1230000,"to": 1260000, "title":"name"}]}}
+% {"command":"create_meeting", "data":{"name":"group1", "creator":"id1","agenda":[{"from": 1557584366000,"to": 1557584396000, "title":"name1"},{"from": 1557584366000,"to": 1557584396000, "title":"name2"}]}}
 %%**********************************************************
 websocket_handle(<<"create_meeting">>, Data, _) ->
 	io:format("Data ~p~n",[Data]),
@@ -106,7 +107,7 @@ websocket_handle(<<"create_meeting">>, Data, _) ->
 	};
 
 %%**********************************************************
-%% {"command":"next"}
+%% {"command":"next", "data":{"group":"GrupeID"}}
 %%**********************************************************
 websocket_handle(<<"next">>, Data, Group) ->
 	io:format("Data ~p~n",[Data]),
