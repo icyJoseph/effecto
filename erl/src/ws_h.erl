@@ -45,13 +45,16 @@ websocket_handle(<<"send">>, Data) ->
 	broadcast(Group, Message);
 
 %%**********************************************************
-%% {"command":"create_group", "data":{"group":"group1"}}
+%% {"command":"create_meeting", "data":{"name":"group1", "agenda":[{"time": "1557560112000", "title":"name"}]}}
 %%**********************************************************
-websocket_handle(<<"create_group">>, Data) ->
-	Group = maps:get(<<"group">>, Data),
-	meeting_group:start(Group),
+websocket_handle(<<"create_meeting">>, Data) ->
+	Group = maps:get(<<"name">>, Data),
+	meeting_group:start(
+		Group, 
+		maps:get(<<"agenda">>, Data)
+	),
 	pg2:join(Group, self()),
-	<<"group_created">>;
+	<<"A new meeting has been created">>;
 
 websocket_handle(_Data, State) ->
 	{ok, State}.
