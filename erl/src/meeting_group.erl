@@ -1,8 +1,13 @@
+%%**********************************************************
+%% TODO:
+%% Add meeting host
+%%**********************************************************
+
 -module(meeting_group).
 
 -export([start/2]).
 -export([init/2]).
--export([time/1]).
+-export([time/2]).
 
 %%**********************************************************
 %% Start a mailbox for each new group. This mailbox starts 
@@ -26,7 +31,7 @@ init(Group, Agenda) ->
                 maps:get(<<"title">>, Entry)
             }
         end, Agenda),
-    spawn_link(?MODULE, time, [Agenda1]),
+    spawn_link(?MODULE, time, [Group, Agenda1]),
     loop(Group, []).
     
 %%**********************************************************
@@ -38,6 +43,10 @@ loop(Group,List) ->
             broadcast(Group, Message),
             ets:insert(messages_group, {Group, [Message | List]}),
             [Message | List];
+        {one_min_remaining, Message} ->
+            broadcast(Group, Message), List;
+        {next_agenda, Message} ->
+            broadcast(Group, Message), List;
         {user_joined, Message} ->
             broadcast(Group, Message), List;
         _ -> List
@@ -47,10 +56,17 @@ loop(Group,List) ->
 %%**********************************************************
 %% Keep track of agenda
 %%**********************************************************
-time([{_Time, _Entry}|T]) ->
-    receive 
-        done -> time(T)
-    end.
+time(Group, [{Time, _Entry}|T]) ->
+    Ti = Time - 1000*60,
+    receive
+    after Ti -> Group ! {one_min_remaining, <<"1 min left">>} %% Fix Message! 
+    end,
+
+    receive
+    after 1000*60 ->
+        [{_, _NextAgenda} | _] = T, 
+        Group ! {next_agenda, <<"Timeslot DONE!">>} %% Fix Message!
+    end, time(Group, T).
 
 %%**********************************************************
 %% 
