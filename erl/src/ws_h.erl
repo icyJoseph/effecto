@@ -47,15 +47,15 @@ websocket_handle(<<"join">>, Data, _) ->
 	};
 
 %%**********************************************************
-%% {"command":"send_feeling", "data":{"id":"id1","message":"hejdu","group":"group1"}}
+%% {"command":"send_feeling", "data":{"id":"id1","feeling":"happy","group":"group1"}}
 %%**********************************************************
-websocket_handle(<<"send">>, Data, Group) ->
+websocket_handle(<<"send_feeling">>, Data, Group) ->
 	io:format("Data ~p~n",[Data]),
 	io:format("Group ~p~n",[Group]),
 	Group = maps:get(<<"group">>, Data),
 	Message = jsone:encode(#{
-			<<"user">> => maps:get(<<"message">>, Data),
-			<<"message">> => maps:get(<<"id">>, Data)
+			<<"user">> => maps:get(<<"id">>, Data),
+			<<"feeling">> => maps:get(<<"feeling">>, Data)
 		}),
 	binary_to_atom(Group, latin1) ! {msg, Message},
 	broadcast(Group, Message),
@@ -69,15 +69,15 @@ websocket_handle(<<"send">>, Data, Group) ->
 	io:format("Group ~p~n",[Group]),
 	Group = maps:get(<<"group">>, Data),
 	Message = jsone:encode(#{
-			<<"user">> => maps:get(<<"message">>, Data),
-			<<"message">> => maps:get(<<"id">>, Data)
+			<<"user">> => maps:get(<<"id">>, Data),
+			<<"message">> => maps:get(<<"message">>, Data)
 		}),
 	binary_to_atom(Group, latin1) ! {msg, Message},
 	broadcast(Group, Message),
 	{ok, Group};
 
 %%**********************************************************
-%% {"command":"create_meeting", "data":{"name":"group1", "creator":"id1", "agenda":[{"start_time": 15575601120000, "end_time": 15575601120000, "title":"name"}]}}
+%% {"command":"create_meeting", "data":{"name":"group1", "creator":"id1", "agenda":[{"from": 15575601120000, "to": 15575601120000, "title":"name"}]}}
 %%**********************************************************
 websocket_handle(<<"create_meeting">>, Data, _) ->
 	io:format("Data ~p~n",[Data]),
