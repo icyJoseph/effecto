@@ -59,12 +59,12 @@ websocket_handle(<<"send">>, Data, Group) ->
 	{ok, Group};
 
 %%**********************************************************
-%% {"command":"create_meeting", "data":{"name":"group1", "agenda":[{"time": "1557560112000", "title":"name"}]}}
+%% {"command":"create_meeting", "data":{"name":"group1", "agenda":[{"time": 15575601120000, "title":"name"}]}}
 %%**********************************************************
 websocket_handle(<<"create_meeting">>, Data, _) ->
 	Group = base64:encode(crypto:strong_rand_bytes(40)),
 	meeting_group:start(
-		binary_to_atom(Group, latin1), 
+		Group,
 		maps:get(<<"name">>, Data),
 		maps:get(<<"agenda">>, Data)
 	),

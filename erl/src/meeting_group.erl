@@ -20,7 +20,7 @@
 start(Group, Name, Agenda) ->
 	pg2:create(Group),
     register(
-        Group, 
+        binary_to_atom(Group, latin1), 
         spawn_link(?MODULE, init, [Group, Agenda])
     ),
     ets:insert(group, {{Group, <<"name">>}, Name}),
@@ -32,18 +32,20 @@ start(Group, Name, Agenda) ->
 
 % -spec init(Group, Agenda) -> no_return().
 init(Group, Agenda) -> 
-	Agenda1 = lists:map(fun(Entry) -> 
+	_Agenda1 = lists:map(fun(Entry) -> 
             {
                 maps:get(<<"time">>, Entry),
                 maps:get(<<"title">>, Entry)
             }
         end, Agenda),
-    {ok, TimePid} = spawn_link(?MODULE, time, [Group, Agenda1]),
-    {ok, UserPid} = spawn_link(
-            ?MODULE, users, 
-            [length(lists:usort(pg2:get_members(Group))),0]
-        ),
-    timer:send_interval(1000, UserPid, check),
+    % TimePid = spawn_link(?MODULE, time, [Group, Agenda1]),
+    TimePid = null,
+    UserPid = spawn_link(?MODULE, users, [Group, 0]),
+    timer:send_interval(
+        1000 * 60, 
+        UserPid, 
+        length(lists:usort(pg2:get_members(Group)))
+    ),
     loop(Group, [], TimePid).
     
 %%**********************************************************
@@ -79,7 +81,7 @@ time(Group, [{Time, _Entry}|T]) ->
             A = os:system_time(millisecond) - StartTime,
             Pid ! (Time - A);
         next_agenda -> 
-            Reminder ! die, ok;
+            Reminder ! die;
         _ -> ok
     after Time ->
         case T of
@@ -87,7 +89,8 @@ time(Group, [{Time, _Entry}|T]) ->
                     ws_h:broadcast(Group, <<"Timeslot DONE!">>);
             _ -> ok
         end
-    end, time(Group, T).
+    end, 
+    time(Group, T).
 
 %%**********************************************************
 %% 
@@ -110,8 +113,12 @@ users(Group, N) ->
             ets:insert(group, {{Group, <<"users">>}, 0}),
             ets:insert(group, 
                 {{Group, <<"status">>}, <<"finished">>}),
-            exit(abandoned);
+            exit(binary_to_atom(Group, latin1), abandoned);
+        [] -> users(Group, N + 1);
         N1 -> 
-            ws_h:broadcast(Group, #{<<"users">> => N1}),
-            ets:insert(group, {{Group, <<"users">>}, N})
+            ws_h:broadcast(
+                Group, jsone:encode(#{<<"users">> => N1})
+            ),
+            ets:insert(group, {{Group, <<"users">>}, N}),
+            users(Group, 0)
     end.

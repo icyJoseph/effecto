@@ -6,7 +6,8 @@
 -export([websocket_info/2]).
 
 init(Req, Opts) ->
-	{{127,0,0,1}, _} = maps:get(peer, Req),
+	% {{192,168,2,145},_} = maps:get(peer, Req),
+	% {{127,0,0,1}, _} = maps:get(peer, Req),
 	{
 		cowboy_websocket, Req, Opts, 
 		#{idle_timeout => 1000 * 60 * 60 * 24}
