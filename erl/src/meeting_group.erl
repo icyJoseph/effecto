@@ -62,7 +62,7 @@ loop(Group, List, TimePid, PrologPid) ->
     receive 
         start_meeting -> 
             TimePid ! start_meeting,
-            loop(Group, List, TimePid);
+            loop(Group, List, TimePid, PrologPid);
         next_agenda -> 
             TimePid ! next_agenda,
             loop(Group, List, TimePid, PrologPid);
