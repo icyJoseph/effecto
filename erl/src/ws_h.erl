@@ -4,6 +4,7 @@
 -export([websocket_init/1]).
 -export([websocket_handle/2]).
 -export([websocket_info/2]).
+-export([broadcast/2]).
 
 init(Req, Opts) ->
 	{
@@ -46,10 +47,10 @@ websocket_handle(<<"send">>, Data, Group) ->
 	Group = maps:get(<<"group">>, Data),
 	Message = jsone:encode(#{
 			<<"user">> => maps:get(<<"message">>, Data),
-			<<"id">> => maps:get(<<"id">>, Data)
+			<<"message">> => maps:get(<<"id">>, Data)
 		}),
-	binary_to_atom(Group, latin1) ! {send, Message},
-	% broadcast(Group, Message),
+	binary_to_atom(Group, latin1) ! {msg, Message},
+	broadcast(Group, Message),
 	{ok, Group};
 
 %%**********************************************************
@@ -69,11 +70,8 @@ websocket_handle(<<"create_meeting">>, Data, _) ->
 %%**********************************************************
 websocket_handle(<<"next">>, Data, Group) ->
 	Group = maps:get(<<"group">>, Data),
-	Message = jsone:encode(#{
-			<<"user">> => maps:get(<<"message">>, Data),
-			<<"id">> => maps:get(<<"id">>, Data)
-		}),
-	broadcast(Group, Message),
+	binary_to_atom(Group, latin1) ! next_agenda,
+	broadcast(Group, <<"next_task">>),
 	{ok, Group}.
 
 websocket_info({timeout, _Ref, _Msg}, State) ->
@@ -85,7 +83,7 @@ websocket_info(Info, State) ->
 %%**********************************************************
 %% 
 %%**********************************************************
-% broadcast(Group, Message) ->
-% 	lists:map(fun(Pid) -> 
-% 		Pid ! Message 
-% 	end, lists:usort(pg2:get_members(Group))).
+broadcast(Group, Message) ->
+	lists:map(fun(Pid) -> 
+		Pid ! Message 
+	end, lists:usort(pg2:get_members(Group))).
