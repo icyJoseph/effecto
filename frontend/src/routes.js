@@ -3,6 +3,8 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import Spinner from "./components/Spinner";
 import NoMatch from "./containers/NoMatch";
 import GlobalStyle from "./styles/GlobalStyle";
+import PublicWs from "./containers/PublicWs";
+import PrivateWs from "./containers/PrivateWs";
 
 const LazyFwdAuth = lazy(() =>
   import(/*webpackChunkName: "lazyFwdAuth"*/ "./containers/FwdAuth")
@@ -43,6 +45,8 @@ function SuspenseMenu({ ...props }) {
 const Routes = () => (
   <>
     <GlobalStyle />
+    <PublicWs />
+    <PrivateWs />
     <BrowserRouter>
       <Route path="/" component={SuspenseMenu} />
       <Switch>
