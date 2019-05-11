@@ -24,13 +24,13 @@ websocket_handle({text, Id}, State) ->
 			<<"invited">> => true,
 			<<"meetings">> => lists:delete(
 					auth, 
-					lists:flatten([
+					lists:usort(lists:flatten([
 						ets:match(user, {{Id, '$1'}}) | 
 						ets:match(
 							group, 
 							{{'$1', <<"creator">>}, Id}
 						)
-					])
+					]))
 				)
 		}),
 	{reply, {text, Msg}, State};

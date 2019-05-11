@@ -34,15 +34,15 @@ websocket_handle(<<"join">>, Data, _) ->
 	ets:insert(user, {{Id, Group}}),
 	pg2:join(Group, self()),
 	(catch register(binary_to_atom(Id, latin1), self())),
-	broadcast(
-		Group, jsone:encode(#{<<"joined_meeting">> => Id})
-	),
 	Info = lists:map(fun({{_, Key}, Value}) -> 
 			{Key, Value}
 		end, ets:match_object(group, {{Group, '_'}, '_'})),
 	{
 		reply, 
-		{text, jsone:encode([{<<"id">>, Group}|Info])}, 
+		{text, jsone:encode([
+			{<<"joined_meeting">>, true}, 
+			{<<"id">>, Group}|Info
+		])}, 
 		Group
 	};
 

@@ -10,11 +10,14 @@
 -export([time/2]).
 -export([reminder/2]).
 -export([users/2]).
+% -export([prolog/1]).
+% -export([prolog_loop/1]).
 
 %%**********************************************************
 %% Start a mailbox for each new group. This mailbox starts 
 %% other processes, keeping track of e.g. time and group 
 %% members.
+%% meeting:start("group1", Name, Creator, Agenda).
 %%**********************************************************
 % -spec start(Group, Agenda) -> no_return().
 start(Group, Name, Creator, Agenda) ->
@@ -32,13 +35,14 @@ start(Group, Name, Creator, Agenda) ->
     ).
 
 % -spec init(Group, Agenda) -> no_return().
-init(Group, Agenda) -> 
-	_Agenda1 = lists:map(fun(Entry) -> 
-            {
-                maps:get(<<"time">>, Entry),
-                maps:get(<<"title">>, Entry)
-            }
-        end, Agenda),
+init(Group, _Agenda) -> 
+    % PrologPid = spawn(?MODULE, prolog, [Group]),
+	% _Agenda1 = lists:map(fun(Entry) -> 
+    %         {
+    %             maps:get(<<"time">>, Entry),
+    %             maps:get(<<"title">>, Entry)
+    %         }
+    %     end, Agenda),
     % TimePid = spawn_link(?MODULE, time, [Group, Agenda1]),
     TimePid = null,
     UserPid = spawn_link(?MODULE, users, [Group, 0]),
@@ -47,26 +51,28 @@ init(Group, Agenda) ->
         UserPid, 
         length(lists:usort(pg2:get_members(Group)))
     ),
-    loop(Group, [], TimePid).
+    PrologPid = null,
+    loop(Group, [], TimePid, PrologPid).
     
 %%**********************************************************
 %% Receive messages to meeting group
 %%**********************************************************
-loop(Group, List, TimePid) ->
+loop(Group, List, TimePid, PrologPid) ->
+    % PrologPid ! hello,
     receive 
         next_agenda -> 
             TimePid ! next_agenda,
-            loop(Group, List, TimePid);
+            loop(Group, List, TimePid, PrologPid);
         {get_time_left, Pid} -> 
             TimePid ! {get_time_left, Pid},
-            loop(Group, List, TimePid);
+            loop(Group, List, TimePid, PrologPid);
         {msg, Map} -> 
             List1 = [Map|List],
             ets:insert(
                 group, 
                 {{Group, messages}, jsone:encode(List1)}
             ),
-            loop(Group, List1, TimePid)
+            loop(Group, List1, TimePid, PrologPid)
     end.
 
 %%**********************************************************
@@ -110,12 +116,12 @@ reminder(_Group, T) ->
 %%**********************************************************
 users(Group, N) -> 
     receive
-        [] when N > 1000 * 60 * 20 -> 
+        0 when N > 1000 * 60 * 20 -> 
             ets:insert(group, {{Group, <<"users">>}, 0}),
             ets:insert(group, 
                 {{Group, <<"status">>}, <<"finished">>}),
             exit(binary_to_atom(Group, latin1), abandoned);
-        [] -> users(Group, N + 1);
+        0 -> users(Group, N + 1);
         N1 -> 
             ws_h:broadcast(
                 Group, jsone:encode(#{<<"users">> => N1})
@@ -123,3 +129,25 @@ users(Group, N) ->
             ets:insert(group, {{Group, <<"users">>}, N}),
             users(Group, 0)
     end.
+
+%%**********************************************************
+%%
+%%**********************************************************
+% prolog(Group) ->
+%     {ok, ConnPid} = gun:open("localhost", 8000),
+%     gun:ws_upgrade(ConnPid, "/ws"),
+%     spawn(?MODULE, prolog_loop, [Group]),
+%     receive
+%         X -> io:format("X ~p~n",[X])
+%     end.        
+
+% prolog_loop(Group) ->
+%     receive
+%         {gun_response, _, _, _, _, _} -> 
+%             prolog(Group);
+%         {gun_error, _, _, _} ->
+%             prolog(Group);
+%         {gun_data,_ ,_ , _, Data} ->
+%             io:format("Data ~p~n",[Data]);
+%         _ -> prolog_loop(Group)
+%     end.        
