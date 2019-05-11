@@ -49,17 +49,22 @@ init(Group, Agenda) ->
 %%**********************************************************
 %% Receive messages to meeting group
 %%**********************************************************
-loop(Group,List, TimePid) ->
-    List1 = receive 
+loop(Group, List, TimePid) ->
+    receive 
         next_agenda -> 
-            TimePid ! next_agenda, ok;
+            TimePid ! next_agenda,
+            loop(Group, List, TimePid);
         {get_time_left, Pid} -> 
-            TimePid ! {get_time_left, Pid}, ok;
+            TimePid ! {get_time_left, Pid},
+            loop(Group, List, TimePid);
         {msg, Map} -> 
-            ets:insert(group, {{Group, messages}, [Map|List]}),
-            [Map | List]
-    end,
-    loop(Group,List1, TimePid).
+            List1 = [Map|List],
+            ets:insert(
+                group, 
+                {{Group, messages}, jsone:encode(List1)}
+            ),
+            loop(Group, List1, TimePid)
+    end.
 
 %%**********************************************************
 %% Keep track of agenda
