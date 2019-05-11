@@ -4,8 +4,6 @@ import PrivateWs from "../PrivateWs";
 import LinkedIn from "../../components/LinkedIn";
 import Logout from "../../components/Logout";
 import Avatar from "../../components/Avatar";
-// import Stopwatch from "../../components/Stopwatch";
-// import Calendar from "../../components/Calendar";
 import { GET_PROFILE, LOG_OUT } from "../../ducks/auth";
 import { Top } from "./styled";
 import CreateMeeting from "../../components/CreateMeeting";
@@ -31,6 +29,8 @@ const Content = styled.div`
 
 export function Main() {
   const { done, refresh, ...auth } = useSelector(({ auth }) => auth);
+  const { meetings } = useSelector(({ meetings }) => meetings);
+
   const dispatch = useDispatch();
   const logout = useCallback(() => dispatch({ type: LOG_OUT }), [dispatch]);
 
@@ -65,13 +65,16 @@ export function Main() {
       {done && (
         <Content>
           <div>
-            <span>No meetings yet!</span>
+            {meetings.length ? (
+              <span>{meetings.length} meeting(s)</span>
+            ) : (
+              // meetings.map(meeting => <span key={meeting}>{meeting}</span>)
+              <span>No meetings yet!</span>
+            )}
           </div>
           {/* <ul>
         <li>Something Interesting?</li>
       </ul> */}
-          {/* <Stopwatch /> */}
-          {/* <Calendar /> */}
           <PrivateWs />
           <div className="options">
             <CreateMeeting />

@@ -33,7 +33,7 @@ export const BurgerMenu = ({
     params: { route = "" }
   }
 }) => {
-  const showBack = ["create", "join"].includes(route);
+  const showBack = ["create", "join", "meeting"].includes(route);
   return (
     <>
       <Menu>
@@ -43,17 +43,11 @@ export const BurgerMenu = ({
         <Link className="menu-item" to="/create">
           Create
         </Link>
-        <Link className="menu-item" to="/meetings">
-          Meetings
-        </Link>
-        <Link className="menu-item" to="/notes">
-          Notes
-        </Link>
         <Link className="menu-item" to="/contacts">
           Contacts
         </Link>
-        <Link className="menu-item" to="/stats">
-          Stats
+        <Link className="menu-item" to="/about">
+          About
         </Link>
       </Menu>
       {showBack && <Back history={history} />}

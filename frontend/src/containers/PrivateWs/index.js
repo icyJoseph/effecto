@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Websocket from "react-websocket";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { ADD_MEETINGS } from "../../ducks/meetings";
 import { ws } from "../../endpoints";
 
 // this socket is to be used privately inside a meeting?
@@ -8,6 +9,7 @@ export function PrivateWs() {
   const wsRef = useRef();
   const [valid, setValid] = useState(false);
   const { refresh, id } = useSelector(({ auth }) => auth);
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (refresh) {
@@ -20,13 +22,14 @@ export function PrivateWs() {
   }, [refresh]);
 
   const handleConnection = () => {
-    console.log("connected to private server");
-    console.log(id);
+    console.log("logging with ", id);
     wsRef.current.sendMessage(id);
   };
 
   const handleMessage = data => {
-    console.log("message", data);
+    const { meetings } = JSON.parse(data || "{}");
+
+    dispatch({ type: ADD_MEETINGS, meetings });
   };
 
   return (

@@ -24,6 +24,10 @@ const LazyJoin = lazy(() =>
   import(/*webpackChunkName: "lazyMenu"*/ "./containers/Join")
 );
 
+const LazyMeeting = lazy(() =>
+  import(/*webpackChunkName: "lazyMenu"*/ "./containers/Meeting")
+);
+
 function SuspenseFwdAuth({ ...props }) {
   return (
     <Suspense fallback={<Spinner />}>
@@ -64,6 +68,14 @@ function SuspenseJoin({ ...props }) {
   );
 }
 
+function SuspenseMeeting({ ...props }) {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <LazyMeeting {...props} />
+    </Suspense>
+  );
+}
+
 const Routes = () => (
   <>
     <GlobalStyle />
@@ -72,6 +84,7 @@ const Routes = () => (
       <Switch>
         <Route path="/auth/callback/" component={SuspenseFwdAuth} />
         <Route path="/create" component={SuspenseCreate} />
+        <Route path="/meeting" component={SuspenseMeeting} />
         <Route path="/join" component={SuspenseJoin} />
         <Route path="/" component={SuspenseMain} />
         <Route component={NoMatch} />

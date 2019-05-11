@@ -14,7 +14,7 @@ const initialState = {
   loadingProfile: false
 };
 
-export function reducer(state = {}, { type, ...action }) {
+export function reducer(state = initialState, { type, ...action }) {
   switch (type) {
     case GET_PROFILE:
     case SET_TOKEN: {
