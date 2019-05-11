@@ -60,7 +60,7 @@ time(Group, [{Time, _Entry}|T]) ->
             A = os:system_time(millisecond) - StartTime,
             Pid ! (Time - A);
         next_agenda -> 
-            exit(Reminder),
+            exit(Reminder, next_agenda),
             time(Group, T)
     after Time ->
         [{_, _NextAgenda} | _] = T,
