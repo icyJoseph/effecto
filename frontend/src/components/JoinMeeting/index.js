@@ -7,6 +7,9 @@ import styled from "styled-components";
 
 const Circle = styled.div`
   > a {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
     font-size: 2em;
   }
 `;
@@ -16,6 +19,7 @@ export function JoinMeeting() {
     <Circle>
       <Link to="/join">
         <FontAwesomeIcon icon={faSignInAlt} />
+        Join Meeting
       </Link>
     </Circle>
   );

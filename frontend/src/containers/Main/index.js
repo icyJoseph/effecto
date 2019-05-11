@@ -17,6 +17,8 @@ const Content = styled.div`
   width: 100%;
 
   .options {
+    padding: 2em;
+    align-items: center;
     display: flex;
     flex-wrap: wrap;
     justify-content: center;

@@ -35,12 +35,12 @@ export const GlobalStyle = createGlobalStyle`
 
   a {
     text-decoration: none;
-    color: ${({ theme }) => theme.red};
+    color: ${({ theme }) => theme.darkBlue};
   }
 
   a:hover {
-    color: ${({ theme }) => theme.darkBlue};
-  }
+    color: ${({ theme }) => theme.red};
+    }
 
   a:focus, a:active {
     outline: none;
