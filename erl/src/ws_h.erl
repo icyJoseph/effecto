@@ -49,7 +49,7 @@ websocket_handle(<<"send">>, Data) ->
 %%**********************************************************
 websocket_handle(<<"create_group">>, Data) ->
 	Group = maps:get(<<"group">>, Data),
-	group:start(Group),
+	meeting_group:start(Group),
 	pg2:join(Group, self()),
 	<<"group_created">>;
 
