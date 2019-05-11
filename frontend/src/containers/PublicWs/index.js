@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import Websocket from "react-websocket";
-import { Switch, Route } from "react-router-dom";
+import { Switch, Route, withRouter } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarPlus } from "@fortawesome/free-solid-svg-icons";
@@ -41,7 +41,7 @@ const Form = styled.form`
 `;
 
 // this socket is to be used privately outside a meeting
-export function PublicWs() {
+export function PublicWs({ history }) {
   const [enabled, setEnabled] = useState(false);
   const wsRef = useRef();
   const _input = useRef("");
@@ -59,8 +59,13 @@ export function PublicWs() {
     console.log("connected to server");
   };
 
-  const handleMessage = data => {
+  const handleMessage = (data = "{}") => {
     console.log("message", data);
+    const parsed = JSON.parse(data);
+    const { success } = parsed;
+    if (success) {
+      history.push("/");
+    }
   };
 
   const createMeeting = e => {
@@ -160,4 +165,4 @@ export function PublicWs() {
   );
 }
 
-export default PublicWs;
+export default withRouter(PublicWs);
