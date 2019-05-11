@@ -21,7 +21,7 @@ websocket_handle({text, Msg}, State) ->
 	Data = jsone:decode(Msg),
 	Id = maps:get(<<"id">>, Data),
 	Group = maps:get(<<"group">>, Data),
-	ets:insert(user, {Id, Group}),
+	ets:insert(user, {{Id, Group}}),
 	{reply, {text, <<"invited">>}, State};
 
 websocket_handle(_Data, State) ->

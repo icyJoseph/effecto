@@ -5,5 +5,5 @@
 
 -spec get(atom()) -> any().
 get(path) -> "../../priv/";
-get(ets) -> [online, group];
+get(ets) -> [user, group];
 get(_) -> fail.

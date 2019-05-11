@@ -20,9 +20,9 @@ websocket_handle({text, Msg}, State) ->
 	{reply, {text, websocket_handle(Command, Data)}, State};
 
 %%**********************************************************
-%% {"command":"login", "data":{"id":"id1","group":"group1"}}
+%% {"command":"join", "data":{"id":"id1","group":"group1"}}
 %%**********************************************************
-websocket_handle(<<"login">>, Data) ->
+websocket_handle(<<"join">>, Data) ->
 	Id = maps:get(<<"id">>, Data),
 	Group = maps:get(<<"group">>, Data),
 	{{Id, Group}} = ets:match(user, {{Id, Group}}),
