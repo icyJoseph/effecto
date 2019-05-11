@@ -15,9 +15,10 @@ init(Req, Opts) ->
 websocket_init(_State) -> {ok, self(), hibernate}.
 
 %%**********************************************************
-%% 
+%% {"id":"id1","group":"group1"}
 %%**********************************************************
-websocket_handle({text, Data}, State) ->
+websocket_handle({text, Msg}, State) ->
+	Data = jsone:decode(Msg),
 	Id = maps:get(<<"id">>, Data),
 	Group = maps:get(<<"group">>, Data),
 	database:insert(user, {Id, Group}),
