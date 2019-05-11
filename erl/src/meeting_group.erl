@@ -5,7 +5,7 @@
 
 -module(meeting_group).
 
--export([start/4]).
+-export([start/5]).
 -export([init/2]).
 -export([time/2]).
 -export([time/3]).
@@ -21,7 +21,7 @@
 %% meeting:start("group1", Name, Creator, Agenda).
 %%**********************************************************
 % -spec start(Group, Agenda) -> no_return().
-start(Group, Name, Creator, Agenda) ->
+start(Group, Name, Creator, Purpose, Agenda) ->
 	pg2:create(Group),
     register(
         binary_to_atom(Group, latin1), 
@@ -29,6 +29,7 @@ start(Group, Name, Creator, Agenda) ->
     ),
     ets:insert(group, {{Group, <<"name">>}, Name}),
     ets:insert(group, {{Group, <<"creator">>}, Creator}),
+    ets:insert(group, {{Group, <<"purpose">>}, Purpose}),
     ets:insert(group, {{Group, <<"agenda">>}, Agenda}),
     ets:insert(group, {{Group, <<"messages">>}, []}),
     ets:insert(
@@ -101,7 +102,6 @@ time(start, Group, List) ->
     time(Group, List).
 
 time(Group, []) ->
-    io:format("meeting done!"),
     receive _ -> ok end, 
     time(Group, []);
 

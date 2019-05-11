@@ -1,6 +1,7 @@
 -module(database).
 -export([
 		init/0,
+		save/0,
 		saveloop/0
 	]).
 
@@ -22,16 +23,19 @@ init() ->
 saveloop() ->
 	receive
 	after 1000*60 ->
-		lists:foreach(fun(Ets) ->
-			unlock(Ets),
-			{ok, Dets} = dets:open_file(
-				variables:get(path) ++ atom_to_list(Ets),
-				[]),
-			dets:from_ets(Dets, Ets),
-			dets:close(Dets),
-			lock(Ets)
-		end, variables:get(ets))
+		save()
 	end, saveloop().
+
+save() ->
+	lists:foreach(fun(Ets) ->
+		unlock(Ets),
+		{ok, Dets} = dets:open_file(
+			variables:get(path) ++ atom_to_list(Ets),
+			[]),
+		dets:from_ets(Dets, Ets),
+		dets:close(Dets),
+		lock(Ets)
+	end, variables:get(ets)).
 
 lock(Ets) ->
 	os:cmd("gpg --yes --batch --passphrase=SuPeRSecretePassword -c "
