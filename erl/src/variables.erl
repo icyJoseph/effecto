@@ -3,5 +3,7 @@
 		get/1
 	]).
 
-get(path) -> "magic/path/dude/";
+-spec get(atom()) -> any().
+get(path) -> "../../priv/";
+get(ets) -> [online, group];
 get(_) -> fail.
