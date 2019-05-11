@@ -50,11 +50,18 @@ export function PublicWs() {
     );
   };
 
+  const nextEntry = () => {
+    wsRef.current.sendMessage(
+      JSON.stringify({"command":"next"})
+    );
+  };
+
   return (
     <div>
       <button onClick={createMeeting}>createMeeting</button>
       <button onClick={joinMeeting}>joinMeeting</button>
       <button onClick={sendMessage}>sendMessage</button>
+      <button onClick={nextEntry}>nextEntry</button>
       <Websocket
         url="ws://localhost:8080/websocket"
         onOpen={handleConnection}

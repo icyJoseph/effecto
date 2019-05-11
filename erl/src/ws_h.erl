@@ -15,7 +15,7 @@ websocket_init(_State) -> {ok, self(), hibernate}.
 
 websocket_handle({text, Msg}, State) ->
 	Json = jsone:decode(Msg),
-	Data = maps:get(<<"data">>, Json),
+	Data = maps:get(<<"data">>, Json, #{}),
 	Command = maps:get(<<"command">>, Json),
 	websocket_handle(Command, Data, State);
 
@@ -59,7 +59,19 @@ websocket_handle(<<"create_meeting">>, Data, _) ->
 		maps:get(<<"agenda">>, Data)
 	),
 	pg2:join(Group, self()),
-	{reply, {text, <<"A new meeting has been created">>}, Group}.
+	{reply, {text, <<"A new meeting has been created">>}, Group};
+
+%%**********************************************************
+%% {"command":"next"}
+%%**********************************************************
+websocket_handle(<<"next">>, Data, Group) ->
+	Group = maps:get(<<"group">>, Data),
+	Message = jsone:encode(#{
+			<<"user">> => maps:get(<<"message">>, Data),
+			<<"id">> => maps:get(<<"id">>, Data)
+		}),
+	broadcast(Group, Message),
+	{ok, Group}.
 
 websocket_info({timeout, _Ref, _Msg}, State) ->
 	{ok, State, hibernate};
