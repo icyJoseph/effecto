@@ -29,10 +29,10 @@ export function* profileSaga() {
     const token = yield select(({ auth: { accessToken } }) => accessToken);
     yield put({ type: LOADING_PROFILE });
     const profile = yield call(getProfile, token);
-    const normalized = normalize(profile);
+    const normalized = profile.use ? profile : normalize(profile);
     yield put({ type: SET_PROFILE, ...normalized });
   } catch (e) {
-    console.log(e);
+    // console.log(e);
     yield put({ type: AUTH_ERROR });
   }
 }
