@@ -69,6 +69,8 @@ loop(Group, List, TimePid) ->
 %%**********************************************************
 %% Keep track of agenda
 %%**********************************************************
+time(_Group, []) ->
+    io:format("meeting done!");
 time(Group, [{Time, _Entry}|T]) ->
     Reminder = spawn(?MODULE, reminder, [Group, Time]),
     StartTime = os:system_time(millisecond),
@@ -77,20 +79,26 @@ time(Group, [{Time, _Entry}|T]) ->
             A = os:system_time(millisecond) - StartTime,
             Pid ! (Time - A);
         next_agenda -> 
-            exit(Reminder, next_agenda),
-            time(Group, T)
+            Reminder ! die, ok;
+        _ -> ok
     after Time ->
-        [{_, _NextAgenda} | _] = T,
-        ws_h:broadcast(Group, <<"Timeslot DONE!">>)
+        case T of
+            [{_, _NextAgenda} | _] -> 
+                    ws_h:broadcast(Group, <<"Timeslot DONE!">>);
+            _ -> ok
+        end
     end, time(Group, T).
 
 %%**********************************************************
 %% 
 %%**********************************************************
-reminder(Group, T) ->
+reminder(_Group, T) ->
     T1 = T - 6000,
     receive
-    after T1 -> ws_h:broadcast(Group, <<"one min left">>)
+        die ->
+            io:format("iam now dead!"),
+            ok
+    after T1 -> io:format("dying after 6sec")%ws_h:broadcast(Group, <<"one min left">>)
     end.
 
 %%**********************************************************
