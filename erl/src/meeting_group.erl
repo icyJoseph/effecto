@@ -5,10 +5,11 @@
 
 -module(meeting_group).
 
--export([start/2]).
+-export([start/3]).
 -export([init/2]).
 -export([time/2]).
 -export([reminder/2]).
+-export([users/2]).
 
 %%**********************************************************
 %% Start a mailbox for each new group. This mailbox starts 
@@ -16,12 +17,17 @@
 %% members.
 %%**********************************************************
 % -spec start(Group, Agenda) -> no_return().
-start(Group, Agenda) ->
+start(Group, Name, Agenda) ->
 	pg2:create(Group),
-    ets:insert(messages_group,{Group, []}),
     register(
         Group, 
         spawn_link(?MODULE, init, [Group, Agenda])
+    ),
+    ets:insert(group, {{Group, <<"name">>}, Name}),
+    ets:insert(group, {{Group, <<"agenda">>}, Agenda}),
+    ets:insert(group, {{Group, <<"messages">>}, []}),
+    ets:insert(
+        group, {{Group, <<"status">>}, <<"active">>}
     ).
 
 % -spec init(Group, Agenda) -> no_return().
@@ -33,22 +39,33 @@ init(Group, Agenda) ->
             }
         end, Agenda),
     {ok, TimePid} = spawn_link(?MODULE, time, [Group, Agenda1]),
+    {ok, UserPid} = spawn_link(
+            ?MODULE, users, 
+            [length(lists:usort(pg2:get_members(Group))),0]
+        ),
+    timer:send_interval(1000, UserPid, check),
     loop(Group, [], TimePid).
     
 %%**********************************************************
 %% Receive messages to meeting group
 %%**********************************************************
-loop(Group,List, TimePid) ->
-    List1 = receive 
+loop(Group, List, TimePid) ->
+    receive 
         next_agenda -> 
-            TimePid ! next_agenda, ok;
+            TimePid ! next_agenda,
+            loop(Group, List, TimePid);
         {get_time_left, Pid} -> 
-            TimePid ! {get_time_left, Pid}, ok;
+            TimePid ! {get_time_left, Pid},
+            loop(Group, List, TimePid);
         {msg, Map} -> 
-            ets:insert(messages_group, {Group, [Map|List]}),
-            [Map | List]
-    end,
-    loop(Group,List1, TimePid).
+            List1 = [Map|List],
+            ets:insert(
+                group, 
+                {{Group, messages}, jsone:encode(List1)}
+            ),
+            loop(Group, List1, TimePid)
+    end.
+
 %%**********************************************************
 %% Keep track of agenda
 %%**********************************************************
@@ -67,8 +84,26 @@ time(Group, [{Time, _Entry}|T]) ->
         ws_h:broadcast(Group, <<"Timeslot DONE!">>)
     end, time(Group, T).
 
+%%**********************************************************
+%% 
+%%**********************************************************
 reminder(Group, T) ->
     T1 = T - 6000,
     receive
     after T1 -> ws_h:broadcast(Group, <<"one min left">>)
+    end.
+
+%%**********************************************************
+%% 
+%%**********************************************************
+users(Group, N) -> 
+    receive
+        [] when N > 1000 * 60 * 20 -> 
+            ets:insert(group, {{Group, <<"users">>}, 0}),
+            ets:insert(group, 
+                {{Group, <<"status">>}, <<"finished">>}),
+            exit(abandoned);
+        N1 -> 
+            ws_h:broadcast(Group, #{<<"users">> => N1}),
+            ets:insert(group, {{Group, <<"users">>}, N})
     end.
