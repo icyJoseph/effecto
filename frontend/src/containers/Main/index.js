@@ -8,7 +8,8 @@ import Avatar from "../../components/Avatar";
 // import Calendar from "../../components/Calendar";
 import { GET_PROFILE, LOG_OUT } from "../../ducks/auth";
 import { Top } from "./styled";
-import Add from "../../components/Add";
+import CreateMeeting from "../../components/CreateMeeting";
+import JoinMeeting from "../../components/JoinMeeting";
 import Spinner from "../../components/Spinner";
 
 import styled from "styled-components";
@@ -16,6 +17,16 @@ import styled from "styled-components";
 const Content = styled.div`
   text-align: center;
   width: 100%;
+
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+    > * {
+      margin: 0 1em;
+    }
+  }
 `;
 
 export function Main() {
@@ -51,18 +62,23 @@ export function Main() {
           </div>
         </Top>
       )}
-      <Content>
-        <div>
-          <span>No meetings yet!</span>
-        </div>
-        {/* <ul>
+      {done && (
+        <Content>
+          <div>
+            <span>No meetings yet!</span>
+          </div>
+          {/* <ul>
         <li>Something Interesting?</li>
       </ul> */}
-        {/* <Stopwatch /> */}
-        {/* <Calendar /> */}
-        <PrivateWs />
-        {done && <Add />}
-      </Content>
+          {/* <Stopwatch /> */}
+          {/* <Calendar /> */}
+          <PrivateWs />
+          <div className="options">
+            <CreateMeeting />
+            <JoinMeeting />
+          </div>
+        </Content>
+      )}
     </div>
   );
 }

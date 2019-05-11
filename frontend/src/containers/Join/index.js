@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import PublicWs from "../PublicWs";
 
-const CreateContent = styled.div`
+const JoinContent = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -17,13 +17,13 @@ const CreateContent = styled.div`
   }
 `;
 
-export function Create() {
+export function Join() {
   return (
-    <CreateContent>
-      <div className="centered">Create a meeting here</div>
+    <JoinContent>
+      <div className="centered">Join a meeting here</div>
       <PublicWs />
-    </CreateContent>
+    </JoinContent>
   );
 }
 
-export default Create;
+export default Join;

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Websocket from "react-websocket";
 import { useSelector } from "react-redux";
 
+// this socket is to be used privately inside a meeting?
 export function PrivateWs() {
   const wsRef = useRef();
   const [valid, setValid] = useState(false);
@@ -18,16 +19,16 @@ export function PrivateWs() {
   }, [refresh]);
 
   const handleConnection = () => {
-    console.log("connected to server");
+    console.log("connected to private server");
   };
 
   const handleMessage = data => {
     console.log("message", data);
   };
 
-  const sendMessage = () => {
-    wsRef.current.sendMessage("929292"); // Send user id
-  };
+  //   const sendMessage = () => {
+  //     wsRef.current.sendMessage("929292"); // Send user id
+  //   };
 
   return (
     valid && (
