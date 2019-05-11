@@ -8,6 +8,7 @@
 -export([start/2]).
 -export([init/2]).
 -export([time/2]).
+-export([reminder/2]).
 
 %%**********************************************************
 %% Start a mailbox for each new group. This mailbox starts 
@@ -39,8 +40,10 @@ init(Group, Agenda) ->
 %%**********************************************************
 loop(Group,List, TimePid) ->
     List1 = receive 
-        next_agenda -> TimePid ! next_agenda;
-        % skip_agenda -> TimePid ! 
+        next_agenda -> 
+            TimePid ! next_agenda, ok;
+        {get_time_left, Pid} -> 
+            TimePid ! {get_time_left, Pid}, ok;
         {msg, Map} -> 
             ets:insert(messages_group, {Group, [Map|List]}),
             [Map | List]
@@ -50,13 +53,22 @@ loop(Group,List, TimePid) ->
 %% Keep track of agenda
 %%**********************************************************
 time(Group, [{Time, _Entry}|T]) ->
+    Reminder = spawn(?MODULE, reminder, [Group, Time]),
     StartTime = os:system_time(millisecond),
     receive
         {get_time_left, Pid} -> 
             A = os:system_time(millisecond) - StartTime,
             Pid ! (Time - A);
-        next_agenda -> time(Group, T)
+        next_agenda -> 
+            exit(Reminder),
+            time(Group, T)
     after Time ->
         [{_, _NextAgenda} | _] = T,
         ws_h:broadcast(Group, <<"Timeslot DONE!">>)
     end, time(Group, T).
+
+reminder(Group, T) ->
+    T1 = T - 6000,
+    receive
+    after T1 -> ws_h:broadcast(Group, <<"one min left">>)
+    end.
