@@ -31,47 +31,32 @@ init(Group, Agenda) ->
                 maps:get(<<"title">>, Entry)
             }
         end, Agenda),
-    spawn_link(?MODULE, time, [Group, Agenda1]),
-    loop(Group, []).
+    {ok, TimePid} = spawn_link(?MODULE, time, [Group, Agenda1]),
+    loop(Group, [], TimePid).
     
 %%**********************************************************
 %% Receive messages to meeting group
 %%**********************************************************
-loop(Group,List) ->
-    ListNew = receive 
-        {send, Message} -> 
-            broadcast(Group, Message),
-            ets:insert(messages_group, {Group, [Message | List]}),
-            [Message | List];
-        {one_min_remaining, Message} ->
-            broadcast(Group, Message), List;
-        {next_agenda, Message} ->
-            broadcast(Group, Message), List;
-        {user_joined, Message} ->
-            broadcast(Group, Message), List;
-        _ -> List
+loop(Group,List, TimePid) ->
+    List1 = receive 
+        next_agenda -> TimePid ! next_agenda;
+        % skip_agenda -> TimePid ! 
+        {msg, Map} -> 
+            ets:insert(messages_group, {Group, [Map|List]}),
+            [Map | List]
     end,
-    loop(Group,ListNew).
-
+    loop(Group,List1, TimePid).
 %%**********************************************************
 %% Keep track of agenda
 %%**********************************************************
 time(Group, [{Time, _Entry}|T]) ->
-    Ti = Time - 1000*60,
+    StartTime = os:system_time(millisecond),
     receive
-    after Ti -> Group ! {one_min_remaining, <<"1 min left">>} %% Fix Message! 
-    end,
-
-    receive
-    after 1000*60 ->
-        [{_, _NextAgenda} | _] = T, 
-        Group ! {next_agenda, <<"Timeslot DONE!">>} %% Fix Message!
+        {get_time_left, Pid} -> 
+            A = os:system_time(millisecond) - StartTime,
+            Pid ! (Time - A);
+        next_agenda -> time(Group, T)
+    after Time ->
+        [{_, _NextAgenda} | _] = T,
+        ws_h:broadcast(Group, <<"Timeslot DONE!">>)
     end, time(Group, T).
-
-%%**********************************************************
-%% 
-%%**********************************************************
-broadcast(Group, Message) ->
-    lists:map(fun(Pid) -> 
-        Pid ! Message 
-    end, pg2:get_members(Group)).
