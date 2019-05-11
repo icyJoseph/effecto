@@ -33,11 +33,9 @@ websocket_handle(<<"join">>, Data, _) ->
 	ets:insert(user, {{Id, Group}}),
 	pg2:join(Group, self()),
 	(catch register(binary_to_atom(Id, latin1), self())),
-	binary_to_atom(Id, latin1) ! 
-		{
-		user_joined, 
-		jsone:encode(#{<<"joined_meeting">> => Id})
-		},
+	broadcast(
+		Group, jsone:encode(#{<<"joined_meeting">> => Id})
+	),
 	{ok, Group};
 
 %%**********************************************************
